@@ -436,7 +436,61 @@ void insert_new_values(std::vector<std::unordered_map<std::string, std::string>>
   } else {
    std::cout << "SQLITE3: opened database successfully" << std::endl;
    // now we iterate through the vals vector, inserting the values stored in each unordered_map
-   
+   for (int i = 0; i < vals.size(); i++) { 
+    // first we need to construct the query string
+    std::string sql = "INSERT INTO print_jobs (" \
+          "job_id, job_name, print_function, copies_printed, total_copies, completed," \
+          "canceled, doublesided, time_started, time_duration, time_units, image_width," \
+          "image_length, media_length, prints_per_job, media_name, media_integrationid, type," \
+          "media_width, media_height, media_grade, media_offset, media_units, sqft_media_printed," \
+          "c_ink, m_ink, y_ink, k_ink, lc_ink, lm_ink, ly_ink, lk_ink, w_ink)" \
+          " VALUES (";
+    sql += "'" + vals[i]["job_id"] + "',";              // job_id
+    sql += "'" + vals[i]["job_name"] + "',";            // job_name
+    sql += "'" + vals[i]["print_function"] + "',";      // print_function
+    sql += "'" + vals[i]["copies_printed"] + "',";      // copies_printed
+    sql += "'" + vals[i]["total_copies"] + "',";        // total_copies
+    sql += "'" + vals[i]["completed"] + "',";           // completed
+    sql += "'" + vals[i]["canceled"] + "',";            // canceled
+    sql += "'" + vals[i]["doublesided"] + "',";         // doublesided
+    sql += "'" + vals[i]["time_started"] + "',";        // time_started
+    sql += "'" + vals[i]["time_duration"] + "',";       // time_duration
+    sql += "'" + vals[i]["time_unites"] + "',";         // time_units
+    sql += "'" + vals[i]["image_width"] + "',";         // image_width
+    sql += "'" + vals[i]["image_length"] + "',";        // image_length
+    sql += "'" + vals[i]["media_length"] + "',";        // media_length
+    sql += "'" + vals[i]["prints_per_job"] + "',";      // prints_per_job
+    sql += "'" + vals[i]["media_name"] + "',";          // media_name
+    sql += "'" + vals[i]["media_integrationid"] + "',"; // media_integrationid
+    sql += "'" + vals[i]["type"] + "',";                // type
+    sql += "'" + vals[i]["media_width"] + "',";         // media_width
+    sql += "'" + vals[i]["media_height"] + "',";        // media_height
+    sql += "'" + vals[i]["media_grade"] + "',";         // media_grade
+    sql += "'" + vals[i]["media_offset"] + "',";        // media_offset
+    sql += "'" + vals[i]["media_units"] + "',";         // media_units
+    sql += "'" + vals[i]["sqft_media_printed"] + "',";  // sqft_media_printed
+    sql += "'" + vals[i]["c_ink"] + "',";               // c_ink 
+    sql += "'" + vals[i]["m_ink"] + "',";               // m_ink  
+    sql += "'" + vals[i]["y_ink"] + "',";               // y_ink 
+    sql += "'" + vals[i]["k_ink"] + "',";               // k_ink
+    sql += "'" + vals[i]["lc_ink"] + "',";              // lc_ink
+    sql += "'" + vals[i]["lm_ink"] + "',";              // lm_ink
+    sql += "'" + vals[i]["ly_ink"] + "',";              // ly_ink
+    sql += "'" + vals[i]["lk_ink"] + "',";              // lk_ink
+    sql += "'" + vals[i]["w_ink"] + "'";                // w_ink 
+    sql += ");";
+    
+    // next we execute the statement 
+    rc = sqlite3_exec(db, sql.c_str(), NULL, NULL, &err_msg);
+    if (rc) {
+     // something went wrong with our selection
+     std::cerr << "SQLITE3: cannot execute insert statement <" << sqlite3_errmsg(db) << '>' << std::endl;
+     sqlite3_free(err_msg);
+     // cut the program short 
+    } else {
+     std::cout << "SQLITE3: insert query executed successfully for vals[" << i << ']' << std::endl; 
+    }
+   }
   }
  }
 }
@@ -449,7 +503,7 @@ void insert_new_values(std::vector<std::unordered_map<std::string, std::string>>
 //~~~~~~~~~~~~~~~~~~~~~
 
 int main(int argc, char* argv[]) {
- std::vector<std::unordered_map<std::string, std::string>> new_values = get_new_values(get_latest_time()); 
+ insert_new_values(get_new_values(get_latest_time()));
  return 0;
 }
 
