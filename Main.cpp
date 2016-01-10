@@ -1,5 +1,6 @@
 // ###################################
-// Author: Jacob Adkins
+// Author: Jacob Paul Adkins
+// Contact: jacobpadkins@gmail.com
 // Name: sdc_parser
 // Desc: Parses log files from printer
 // Date: 1/8/2016
@@ -49,16 +50,6 @@
  * 3. check timestamp of block and ignore if need be
  * 4. continue to the end of the file, gathering any new data
  * 5. finally, insert new data into the db
- *
- *
- * WARNINGS:
- *
- * I'm not sure if it's something about sqlite3 I've
- * overlooked, but calling a select * query on an empty
- * table and then accessing argv[0] in the callback
- * causes a seg fault. And it is not possible to check
- * if (argc == 1), because it will always at least be
- * 1, oddly enough
  * 
  * */
 
@@ -128,10 +119,10 @@ const std::string keys[] = {
  "ly_ink",
  "lk_ink",
  "w_ink"};
- 
 
-// performs action #5 above
-void insert_new_values(std::vector<std::unordered_map<std::string, std::string>> vals);
+//#####################
+// DEBUG INSERT 
+//#####################
 
 // inserts a row for debugging purposes
 void debug_insert() {
@@ -210,9 +201,16 @@ void debug_insert() {
  }
 }
 
+//#####################
+// GET LATEST TIME
+//#####################
+
 // performs action #1 from above list
 // returns latest timestamp in string format 
-std::string get_latest_time() { 
+std::string get_latest_time() {
+
+ /* PART 1: DEFINE VARS AND OPEN DB */
+
  // define database variables
  sqlite3* db;
  char* err_msg = 0;
@@ -228,6 +226,8 @@ std::string get_latest_time() {
   std::cout << "SQLITE3: opened database successfully" << std::endl;
  }
  
+ /* PART 2: Create print_jobs table if need be */
+
  // create print_jobs table if it does not exist
  // here we define the sql statement to do so
  // we will be storing everything as text because
@@ -281,6 +281,9 @@ std::string get_latest_time() {
  } else {
   // everything is good and we can continue 
   std::cout << "SQLITE3: table 'print_jobs' created successfully (or already exists)" << std::endl; 
+  
+  /* PART 3: Check row count int print_jobs table */
+  
   // before we query for the most recent timestamp, we need to
   // make sure that there are at least one rows in the table
   // we will store the row count in this variable
@@ -306,6 +309,9 @@ std::string get_latest_time() {
     std::cout << "SQLITE3: row count too small to continue - assuming empty table and returning 0" << std::endl;
     return "0";
    } else { 
+    
+    /* PART 4: Select and return the lastest timestamp */
+    
     // we want to query for the highest 'time started' attribute value
     sql = "SELECT MAX(time_started) FROM print_jobs;";
     // we will store the result of the query in this variable
@@ -343,6 +349,9 @@ std::string get_latest_time() {
  } 
 }
 
+//#####################
+// GET NEW VALUES 
+//#####################
 
 // performs actions #2, #3, and #4 from above list
 // returns vector<unordered_map> where unordered_map contains new values to insert 
@@ -355,6 +364,7 @@ std::vector<std::unordered_map<std::string, std::string>> get_new_values(std::st
   std::ifstream ifs("jdfserverd.log");
   // define key phrase that tells us we have reached a block to parse
   std::string key_phrase = "Job Complete Data:";
+   
   // loop until we reach the end of ifs
   while(!ifs.eof()) {
    // line will hold the current line
@@ -376,6 +386,7 @@ std::vector<std::unordered_map<std::string, std::string>> get_new_values(std::st
      if (t > latest_time) { 
       // we will populate this unordered_map with our values and push it into vals
       std::unordered_map<std::string, std::string> block;
+      
       // iterate through delimeters array
       for (int i = 0; i < 24; i++) {
        // special case when i == 23
@@ -396,13 +407,49 @@ std::vector<std::unordered_map<std::string, std::string>> get_new_values(std::st
    } 
   } 
  }
+ std::cout << "get_new_values(): Found " << vals.size() << " new blocks of data!" << std::endl;
  return vals;
 }
 
+//#####################
+// INSERT NEW VALUES 
+//#####################
+
+// performs action #5 above
+void insert_new_values(std::vector<std::unordered_map<std::string, std::string>> vals) {
+ // check size of vals vector before we continue
+ if (vals.size() == 0) {
+  // there are no new values to insert
+  std::cout << "insert_new_values: There are no new blocks of data to insert - exiting." << std::endl;
+ } else {
+  // there are blocks to insert.
+  // we begin by opening the database
+  // like we did above.  
+  sqlite3* db;
+  char* err_msg = 0;
+  int rc = sqlite3_open("sdc_printer.db", &db);
+  std::string sql;
+
+  // test if opening the db was successful
+  if (rc) {
+   std::cerr << "SQLITE3: cannot open database <" << sqlite3_errmsg(db) << '>' << std::endl; 
+  } else {
+   std::cout << "SQLITE3: opened database successfully" << std::endl;
+   // now we iterate through the vals vector, inserting the values stored in each unordered_map
+   
+  }
+ }
+}
+
+
+//~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~
+//        MAIN 
+//~~~~~~~~~~~~~~~~~~~~~
+//~~~~~~~~~~~~~~~~~~~~~
 
 int main(int argc, char* argv[]) {
  std::vector<std::unordered_map<std::string, std::string>> new_values = get_new_values(get_latest_time()); 
- //debug_insert();
  return 0;
 }
 
