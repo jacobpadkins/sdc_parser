@@ -4,7 +4,7 @@
 
 # compilation definitions
 CXX = g++
-CXXFLAGS = -Wall -std=c++14 -lboost_system 
+CXXFLAGS = -Wall -std=c++14 -lsqlite3
 
 # makefile targets
 all : o.o
