@@ -9,7 +9,7 @@ CXXFLAGS = -Wall -std=c++14 -lsqlite3
 # makefile targets
 all : o.o
 
-o.o : Main.cpp 
+o.o : Main_no_db.cpp 
 	${CXX} $^ ${CXXFLAGS} -o $@
 
 clean :
