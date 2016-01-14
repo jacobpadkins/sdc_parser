@@ -11,6 +11,8 @@
 #include <fstream>
 #include <sstream>
 #include <vector> 
+#include <ctime>
+#include <cstdio>
 #include "csv_parser.hpp"
 
 /*
@@ -59,14 +61,24 @@
  * parsed and output to a local .csv file
  * */
 
+// function to return current time
+const std::string current_datetime() {
+  time_t now = time(0);
+  struct tm tstruct;
+  char buf[80];
+  tstruct = *localtime(&now);
+  strftime(buf, sizeof(buf), "%Y-%m-%d 00:00:00", &tstruct);
+  return buf;
+}
+
 // filepath to log file
-std::string LOGFILE;
+std::string LOGFILE = "/var/log/jdfserverd.log";
 // name of printer
-std::string PRINTER;
+std::string PRINTER = "A";
 // timestamp min cutoff
 std::string TIMECUT;
 // output csv file
-std::string OUTFILE;
+std::string OUTFILE = "~/Desktop/print_log.csv";
 
 // define value field labels
 const std::string labels[] = {
@@ -187,22 +199,22 @@ std::map<std::string, std::vector<std::string>> get_new_values(std::string lates
 
 int main(int argc, char* argv[]) { 
   // set global values using cl params
-  if (argc < 5) {
+  /*if (argc < 5) {
     std::cerr << "main(): not enough params, need <filepath> <printer name> " \
         "<YYYY-MM-DD HH:MM:SS (army time)> <<output file> - exiting" << std::endl; 
     return 0;
-  }
+  }*/
 
-  LOGFILE = std::string(argv[1]);
-  PRINTER = std::string(argv[2]);
-  TIMECUT = std::string(argv[3]);
-  OUTFILE = std::string(argv[4]);
+  //LOGFILE = std::string(argv[1]);
+  //PRINTER = std::string(argv[2]);
+  TIMECUT = current_datetime(); 
+  //OUTFILE = std::string(argv[4]);
   std::cout << "main(): LOGFILE = <" << LOGFILE << '>' << std::endl;
   std::cout << "main(): PRINTER = <" << PRINTER << '>' << std::endl;
   std::cout << "main(): TIMECUT = <" << TIMECUT << '>' << std::endl;
   std::cout << "main(): OUTFILE = <" << OUTFILE << '>' << std::endl; 
 
-  gen_csv(get_new_values(TIMECUT), OUTFILE); 
+  //gen_csv(get_new_values(TIMECUT), OUTFILE); 
   return 0;
 }
 

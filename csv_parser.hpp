@@ -74,11 +74,11 @@ parse_csv(std::string filename, char* delimiter, int column_count) {
   char* token;
   
   strcpy(c_line, line.c_str());
-  token = std::strtok(c_line, delimiter); 
+  token = strtok(c_line, delimiter); 
   while (token != NULL) {
     std::vector<std::string> v;
     csv.insert({std::string(token), v});
-    token = std::strtok(NULL, delimiter);
+    token = strtok(NULL, delimiter);
   }
   delete[] c_line; 
   
@@ -87,9 +87,9 @@ parse_csv(std::string filename, char* delimiter, int column_count) {
   while (!ifs.eof()) {
     std::getline(ifs, line);
     c_line = new char[line.length() + 1];
-    token = std::strtok(c_line, delimiter);
+    token = strtok(c_line, delimiter);
     while (token != NULL) {
-      token = std::strtok(NULL, delimiter);
+      token = strtok(NULL, delimiter);
     }
     delete[] c_line;
   }
@@ -99,32 +99,33 @@ parse_csv(std::string filename, char* delimiter, int column_count) {
 
 // this function takes a map of vectors and generates a csv
 void gen_csv(std::map<std::string, std::vector<std::string>> data, std::string out) { 
+  
   // open ofstream for output
-  std::ofstream ofs(out);
+  std::ofstream ofs(out); 
   if (!ofs.is_open()) {
     std::cerr << "gen_csv: Cannot create/open output file <" << out << "> - exiting";
     return; 
   }
-
+  
   // iterate through keys, creating column value line
   std::string column_row = "";
   char delim = '|';
 
   for (int i = 0; i < 33; i++) {
-    column_row += keys[i] + delim;
+    column_row += '"' + keys[i] + '"' + delim;
   }
   
   column_row = column_row.substr(0, column_row.size()-1);
   column_row += '\n';
   ofs << column_row;
- 
+  
   // iterate through vectors, creating each subsequent line 
   std::string data_row = "";
-  for (int i = 0; i < data[keys[i]].size(); i++) {
-    for (int j = 0; j < data.size(); j++) {
-      data_row += data[keys[j]][i] + delim;
+  for (unsigned int i = 0; i < data[keys[1]].size(); i++) {
+    for (unsigned int j = 0; j < data.size(); j++) {
+      data_row += '"' + data[keys[j]][i] + '"' + delim; 
     }
-    data_row = data_row.substr(0, column_row.size()-1);
+    data_row = data_row.substr(0, data_row.length()-1);
     data_row += '\n';
     ofs << data_row;
     data_row = "";
